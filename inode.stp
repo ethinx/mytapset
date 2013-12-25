@@ -1,0 +1,34 @@
+#!/usr/bin/env stap
+
+/*
+Audit the inode event read/open
+*/
+
+#probe module("ext4").function("ext4_rename") {
+#    t_inode = 4333436
+#    old_finode = $old_dentry->d_inode->i_ino
+#    new_finode = $new_dentry->d_inode
+#    new_fname = kernel_string($new_dentry->d_name->name)
+#
+#    # get new file folder, unnecessary, just want to try d_parent
+#    #p_dname = kernel_string($new_dentry->d_parent->d_name->name)
+#
+#    if (old_finode==t_inode)
+#        printf("%s(%d) inode = %d, new filename = %s\n", execname(), pid(), old_finode, new_fname)
+#}
+
+#probe kernel.function("generic_file_open") {
+#    t_inode = 4333436
+#    open_inode = $inode->i_ino
+#
+#    if (open_inode == t_inode) {
+#        printf("hello\n")
+#    }
+#}
+
+probe vfs.read {
+    if (ino == $1) {
+        #printf("vfs.read, vfs.write\n")
+        printf("%s(%d) %s\n", execname(), pid(), pp())
+    }
+}

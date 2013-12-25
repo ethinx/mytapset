@@ -1,0 +1,17 @@
+#!/usr/bin/env stap
+
+/*
+Audit which task open a specific file
+*/
+
+probe kernel.function("generic_file_open"){
+    filename = d_name($filp->f_path->dentry)
+    #mountpoint = d_name($filp->f_path->mnt->mnt_mountpoint)
+    devname = kernel_string($filp->f_path->mnt->mnt_devname)
+
+    if (filename=="fileread.stp") {
+        printf("%s(%d)\n", execname(), pid())
+        printf("%s\n", devname)
+    }
+
+}

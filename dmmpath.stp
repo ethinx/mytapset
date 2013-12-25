@@ -1,0 +1,14 @@
+#!/usr/bin/env stap
+
+/*
+Forget what is it used for...
+However, a sample of utrace.
+*/
+
+probe process("/lib64/libmultipath.so").statement("select_action@configure.c:158") {
+    printf("\n==========\n")
+    printf("alias: %s\n", user_string($mpp->alias))
+    printf("alias_old: %s\n", user_string($mpp->alias_old))
+    printf("wwid: %s\n", user_string($mpp->wwid))
+    printf("selector: %s\n", user_string($mpp->selector))
+}

@@ -1,0 +1,27 @@
+#!/usr/bin/env stap
+
+/*
+Audit who rename a specific file.
+*/
+
+# fs/namei.c SYSCALL_DEFINE2(rename.....)
+probe syscall.rename {
+        oldf_name = user_string($oldname)
+        newf_name = user_string($newname)
+        res = isinstr(oldf_name, "test.file")
+        task_addr = pid2task(pid())
+
+        # use cast to get info from task_struct
+        p = @cast(task_addr, "task_struct", "kernel<linux/sched.h>")->pid
+
+        dir_begin = substr(oldf_name, 0, 1)
+        if (res) {
+            if (dir_begin=="/") {
+                if (oldf_name=="/home/york/code/stp/test.file") {
+                    printf("%s(%d) from \"%s\" \"%s\"\n", execname(), p, oldf_name, newf_name)
+                    printf("Called in %s\n", pp())
+                    printf("%s\n", dir_begin)
+                }
+            }
+        }
+}

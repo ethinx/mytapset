@@ -1,0 +1,36 @@
+#!/usr/bin/env stap
+
+/*
+Use this script to audit who modprobe ip_tables
+*/
+
+probe syscall.init_module {
+    cmd_args = cmdline_args(1, -1, " ")
+    if (isinstr(cmd_args, "ip_tables")) {
+        /*printf("%s\n", pp())
+        printf("%d %s\n", pid(), execname())
+        */
+
+        /*current_pid = pid()
+        cmd_pid = pid2task(current_pid)
+        pcmd_name = task_execname(cmd_pid)
+        printf("%s\n", pcmd_name)
+        */
+
+        printf("=====start=====\n")
+        printf("Command line: %s\n\n", cmdline_str())
+        current_task = task_current()
+        task_pid = task_pid(current_task)
+        printf("PID: %d, Name: %s\n", task_pid, task_execname(current_task))
+        //printf("%s\n", cmd_args)
+        level = 2
+
+        while (task_pid > 1) {
+            p_task = task_parent(current_task)
+            current_task = p_task
+            task_pid = task_pid(p_task)
+            printf("%*sPPID: %5d, CMD: %s\n", level, "\\_", task_pid, task_execname(current_task))
+            level++
+        }
+    }
+}

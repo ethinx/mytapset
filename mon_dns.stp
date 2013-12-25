@@ -1,0 +1,39 @@
+#!/usr/bin/env stap
+/*
+This script is used for auditing which process send DNS query to specific host
+
+Before running this script, you need to change the $dport and $daddr
+
+Usage: stap -v mon_dns.stp
+*/
+
+/*
+probe kernel.function("udp_sendmsg") {
+    socket_addr = $msg->msg_name
+    port = @cast(socket_addr, "sockaddr_in", "kernel<linux/in.h>")->sin_port
+        family = @cast(socket_addr, "sockaddr_in", "kernel<linux/in.h>")->sin_family
+        addr = @cast(socket_addr, "sockaddr_in", "kernel<linux/in.h>")->sin_addr->s_addr
+    if (addr == 0x117F420A && port == 13568) {
+        printf("exec %s, pid: %d\n", execname(), pid())
+        printf("%p\n", socket_addr)
+    }
+}
+*/
+
+
+//For RHEL5
+//probe kernel.statement("udp_sendmsg@net/ipv4/udp.c:570") {
+
+//For RHEL6
+probe kernel.statement("udp_sendmsg@net/ipv4/udp.c:670") {
+    //printf("%s\n", pp())
+    /*
+    hton(53) == 13568
+    inet_addr("10.66.127.17") = 0x117f420a
+    */
+    if ( $dport == 13568 && $daddr == 0x117f420a){
+        //printf("%d\n", $dport)
+        //printf("%x\n", $daddr)
+        printf("Name: %s, PID: %d\n", execname(), pid())
+    }
+}
