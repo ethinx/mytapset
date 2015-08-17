@@ -1,0 +1,18 @@
+#!/usr/bin/env stap
+/*
+This script is used for checking what packet is being retransmitted
+
+If retransmit happened, RetransSegs in /proc/net/snmp will be updated
+
+Usage: stap -v mon_retrans.stp
+ */
+
+probe tcpmib.RetransSegs {
+    printf("ReSn==\n");
+    printf("local_addr: %d, remote_addr: %d, local_port: %d, remote_port: %d\n", tcpmib_local_addr(sk), tcpmib_remote_addr(sk), tcpmib_local_port(sk), tcpmib_remote_port(sk));
+}
+
+/*probe tcpmib.OutSegs {
+  printf("Send==\n");
+  printf("local_addr: %d, remote_addr: %d, local_port: %d, remote_port: %d\n", tcpmib_local_addr(sk), tcpmib_remote_addr(sk), tcpmib_local_port(sk), tcpmib_remote_port(sk));
+}*/
